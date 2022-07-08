@@ -1,0 +1,10 @@
+main_STABLE.c:65:6:LEDS_TEST	8	static
+main_STABLE.c:75:6:PWM_TEST	24	static
+main_STABLE.c:121:6:RS485_TEST	112	static
+main_STABLE.c:157:5:main	16	static
+main_STABLE.c:216:6:SystemClock_Config	88	static
+main_STABLE.c:260:13:MX_SPI1_Init	8	static
+main_STABLE.c:298:13:MX_TIM2_Init	48	static
+main_STABLE.c:347:13:MX_USART1_UART_Init	8	static
+main_STABLE.c:380:13:MX_GPIO_Init	40	static
+main_STABLE.c:415:6:Error_Handler	4	static,ignoring_inline_asm

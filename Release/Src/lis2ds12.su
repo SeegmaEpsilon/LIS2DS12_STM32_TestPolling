@@ -1,0 +1,7 @@
+lis2ds12.c:27:9:SPIx_WriteRead	56	static
+lis2ds12.c:37:6:Accel_IO_Read	16	static
+lis2ds12.c:58:6:Accel_IO_Write	16	static
+lis2ds12.c:76:9:Accel_ReadID	16	static
+lis2ds12.c:83:6:Accel_GetXYZ	24	static
+lis2ds12.c:103:6:Accel_ReadAcc	32	static
+lis2ds12.c:118:6:Accel_Ini	48	static
