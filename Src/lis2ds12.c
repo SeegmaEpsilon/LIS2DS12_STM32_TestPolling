@@ -118,12 +118,11 @@ void Accel_Ini(void)				 // Функция инициализации аксел
 {
 	uint8_t ctrl1 = 0x00;
 	uint8_t ctrl2 = 0x00;
-	uint8_t strCheck[]="DEVICE HAS BEEN FOUNDED\r\n";
-	HAL_Delay(500);
+	HAL_Delay(1000);
 	if(Accel_ReadID()==0x43)
 		{
 		RS_485_ON;
-		HAL_UART_Transmit(&huart1, (uint8_t*)strCheck, strlen(strCheck), 0x1000);
+		HAL_UART_Transmit(&huart1, "DEVICE HAS BEEN FOUNDED\r\n", 27, 3);
 		HAL_Delay(100);
 		RS_485_OFF;;
 		}

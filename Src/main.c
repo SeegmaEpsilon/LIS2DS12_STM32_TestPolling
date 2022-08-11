@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "lis2ds12.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -63,94 +62,11 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void LEDS_TEST(void)			// Функция проверки светодиодов
-{
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-	  HAL_Delay(1000);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-	  HAL_Delay(1000);
-}
-
-void PWM_TEST(void)				// Функция проверки Ш�?М
-{
-	  uint8_t PWM_delay = 16;
-	  for (int i=0; i<=2047; i++)
-	  {
-		  if ((i>1423)&&(i<=2047)) {
-			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-			  TIM2->CCR2 = i;
-			  HAL_Delay(PWM_delay);
-		  }
-		  else if ((i>1423)!=(i<=2047)) {
-			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
-			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-			  TIM2->CCR2 = i;
-			  HAL_Delay(PWM_delay);
-		  }
-		  else {
-			  TIM2->CCR2 = i;
-			  HAL_Delay(PWM_delay);
-		  }
-
-	  }
-
-	  for (int i=2047; i>=0; i--)
-	  {
-		  if ((i>1423)&&(i<=2047)) {
-			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-			  TIM2->CCR2 = i;
-			  HAL_Delay(PWM_delay);
-		  }
-		  else if ((i>1423)!=(i<=2047)) {
-			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
-			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-			  TIM2->CCR2 = i;
-			  HAL_Delay(PWM_delay);
-		  }
-		  else {
-			  TIM2->CCR2 = i;
-			  HAL_Delay(PWM_delay);
-		  }
-	  }
-	  HAL_Delay(10);
-}
-
-void RS485_TEST(void)			// Функция проверки RS485
-{
-	uint8_t data_flag = 0;
-	uint8_t str[100];
-	uint8_t strUART[]="UART TEST\n\r";
-	RS_485_ON;
-	HAL_UART_Transmit(&huart1, (uint8_t*)strUART, strlen(strUART), 0x1000);
-	HAL_Delay(2000);
-	RS_485_OFF;
-	while(data_flag == 0)
-	{
-		if(HAL_UART_Receive(&huart1, str, 1, 0x1000) == HAL_OK)
-			{
-			    uint8_t strUART[]="\r\nUART OK\r\n";
-				RS_485_ON;
-				HAL_UART_Transmit(&huart1, str, 1, 0x1000);
-				HAL_Delay(1000);
-				HAL_UART_Transmit(&huart1, (uint8_t*)strUART, strlen(strUART), 0x1000);
-				RS_485_OFF;
-				data_flag = 1;
-				HAL_Delay(2000);
-			}
-		else
-		{
-			uint8_t strWaiting[] = "WAITING FOR A BYTE\r\n";
-			RS_485_ON;
-			HAL_UART_Transmit(&huart1, (uint8_t*)strWaiting, strlen(strWaiting), 0x1000);
-			RS_485_OFF;
-			HAL_Delay(2000);
-		}
-	}
-}
+void LEDS_TEST(void);
+void PWM_TEST(void);
+void RS485_TEST(void);
+void Accel_Ini(void);
+void Accel_ReadAcc(void);
 
 /* USER CODE END 0 */
 
@@ -186,62 +102,20 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  // Accel_Ini(); 				// Вызов функции инициализации акселлерометра
+  // Accel_Ini(); 				// Вызов функция инициализации акселлерометра
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-  Accel_Ini();
-  //char rs_buffer[100]={0};
-  //uint8_t state = 0;
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-	uint8_t state = 0;
 	LEDS_TEST(); 			// Вызов функции проверки светодиодов
-	PWM_TEST(); 			// Вызов функции проверки PWM
+	PWM_TEST(); 			// Вызов функции проверки ШИМ
 	RS485_TEST();			// Вызов функции проверки RS485
-	//Accel_Ini();			// Вызов функция инициализации акселлерометра
-	Accel_ReadAcc();
-
-
-	if(state == 0)
-	{
-		Accel_Ini(); 				// Вызов функция инициализации акселлерометра
-		state = 1;
-	}
-
-	static long int requests_counter = 0;
-	static long int errors_counter = 0;
-	static long int corrects_counter = 1;
-
-	requests_counter++;
-    if(Accel_ReadID() == 0x43)
-			{
-    			corrects_counter++;
-			}
-    else (requests_counter == 1 ? 0 : errors_counter++);
-
-    if (requests_counter >= 100000)
-    {
-    	RS_485_ON;
-    	sprintf(rs_buffer, "SCHETCHIK PRAVILNYH DANNYH / SCHETCHIK ZAPROSOV\r\n", corrects_counter, requests_counter);
-    	HAL_UART_Transmit(&huart1, (uint8_t*)rs_buffer, strlen(rs_buffer), 0x1000);
-    	sprintf(rs_buffer, "%d/%d\r\n", corrects_counter, requests_counter);
-    	HAL_UART_Transmit(&huart1, (uint8_t*)rs_buffer, strlen(rs_buffer), 0x1000);
-    	RS_485_OFF;
-    	HAL_Delay(100);
-    	requests_counter = 0;
-    	errors_counter = 0;
-    	corrects_counter = 0;
-    }
-
-
-
-
+  Accel_Ini(); 				// Вызов функция инициализации акселлерометра
+	for(uint8_t i = 0; i < 5; i++)
+	  Accel_ReadAcc();		// Вызов функции проверки акселлерометра
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -266,14 +140,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 25;
-  RCC_OscInitStruct.PLL.PLLN = 168;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -282,12 +152,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -298,6 +168,92 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
+void LEDS_TEST(void)			// Функция проверки светодиодов
+{
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+	  HAL_Delay(1000);
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+	  HAL_Delay(1000);
+}
+
+void PWM_TEST(void)				// Функция проверки ШИМ
+{
+	  uint8_t PWM_delay = 16;
+	  for (int i=0; i<=255; i++)
+	  {
+		  if ((i>178)&&(i<=255)) {
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+			  TIM2->CCR2 = i;
+			  HAL_Delay(PWM_delay);
+		  }
+		  else if ((i>178)!=(i<=255)) {
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+			  TIM2->CCR2 = i;
+			  HAL_Delay(PWM_delay);
+		  }
+		  else {
+			  TIM2->CCR2 = i;
+			  HAL_Delay(PWM_delay);
+		  }
+
+	  }
+
+	  for (int i=255; i>=0; i--)
+	  {
+		  if ((i>178)&&(i<=255)) {
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+			  TIM2->CCR2 = i;
+			  HAL_Delay(PWM_delay);
+		  }
+		  else if ((i>178)!=(i<=255)) {
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+			  TIM2->CCR2 = i;
+			  HAL_Delay(PWM_delay);
+		  }
+		  else {
+			  TIM2->CCR2 = i;
+			  HAL_Delay(PWM_delay);
+		  }
+	  }
+	  HAL_Delay(10);
+}
+
+void RS485_TEST(void)			// Функция проверки RS485
+{
+	uint8_t data_flag = 0;
+	uint8_t str[100];
+	RS_485_ON;
+	HAL_UART_Transmit(&huart1, (uint8_t*)"UART TEST\n\r\0", sizeof("UART TEST\n\r\0"), 100);
+	HAL_Delay(2000);
+	RS_485_OFF;
+	while(data_flag == 0)
+	{
+		if(HAL_UART_Receive(&huart1, str, 1, 100) == HAL_OK)
+			{
+				RS_485_ON;
+				HAL_UART_Transmit(&huart1, str, 1, 100);
+				HAL_Delay(1000);
+				HAL_UART_Transmit(&huart1, (uint8_t*)"\r\nUART OK\r\n\0", sizeof("\r\nUART OK\r\n\0"), 100);
+				RS_485_OFF;
+				data_flag = 1;
+				HAL_Delay(2000);
+			}
+		else
+		{
+			RS_485_ON;
+			HAL_UART_Transmit(&huart1, (uint8_t*)"WAITING FOR A BYTE\r\n\0", sizeof("WAITING FOR A BYTE\r\n\0"), 100);
+			RS_485_OFF;
+			HAL_Delay(2000);
+		}
+	}
+}
+
 static void MX_SPI1_Init(void)
 {
 
@@ -314,7 +270,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
@@ -352,7 +308,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 64;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 2047;
+  htim2.Init.Period = 255;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -423,7 +379,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
