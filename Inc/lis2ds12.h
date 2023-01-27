@@ -28,11 +28,12 @@
 //---------------------------------------------------------
 #define LIS2DS12_CTRL1                 ((uint8_t)0x20)
 #define LIS2DS12_CTRL2                 ((uint8_t)0x21)
+#define LIS2DS12_CTRL4                 ((uint8_t)0x23)
 #define LIS2DS12_XL_ODR_100Hz_LP       ((uint8_t)0x0C)
 #define LIS2DS12_XL_ODR_100Hz_HR       ((uint8_t)0x04)
 //---------------------------------------------------------
-#define RS_485_ON 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
-#define RS_485_OFF 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+#define RS_485_ON             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
+#define RS_485_OFF            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
 //---------------------------------------------------------
 #define LIS2DS12_FULLSCALE_2           ((uint8_t)0x00)
 //---------------------------------------------------------
@@ -50,6 +51,5 @@
 //---------------------------------------------------------
 void Accel_Ini(void);
 void Accel_ReadAcc(void);
-uint8_t Accel_ReadID(void);
 //---------------------------------------------------------
 #endif /* INC_LIS2DS12_H_ */
