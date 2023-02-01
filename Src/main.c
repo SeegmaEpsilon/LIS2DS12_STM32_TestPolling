@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2022 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include "string.h"
+#include "lis2ds12.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,12 +33,13 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define VD15_TEST_VERSION 1.1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define RS_485_ON             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
-#define RS_485_OFF            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+#define LED_ON HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET)
+#define LED_OFF HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET)
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -48,6 +50,9 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+uint32_t PWM_MAX = 0;
+uint32_t PWM_MIN = 0;
+
 uint32_t INT1_counts = 0;
 uint32_t INT2_counts = 0;
 uint32_t INTx_counts = 0;
@@ -73,17 +78,17 @@ void print_UART_value(char *str_to_send, float value_to_send)
 {
   uint8_t temp[200] = { 0 };
   sprintf((char*)temp, str_to_send, value_to_send);
-  RS_485_ON
+  RS_485_ON;
   while(HAL_UART_Transmit(&huart1, (uint8_t*)temp, strlen((char*)temp), 0x1000) == HAL_BUSY);
-  RS_485_OFF
+  RS_485_OFF;
 }
 
 /* send str without value over UART */
 void print_UART_message(char *str_to_send)
 {
-  RS_485_ON
+  RS_485_ON;
   while(HAL_UART_Transmit(&huart1, (uint8_t*)str_to_send, strlen((char*)str_to_send), 0x1000) == HAL_BUSY);
-  RS_485_OFF
+  RS_485_OFF;
 }
 /* USER CODE END PV */
 
@@ -140,32 +145,38 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   // Accel_Ini(); 				// Вызов функция инициализации акселлерометра
+  PWM_MAX = htim2.Init.Period;
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-  uint8_t data_requests = 10;
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+  uint8_t data_requests = 1;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+  while(1)
   {
-	LEDS_TEST(); 			// Вызов функции проверки светодиодов
-	PWM_TEST(); 			// Вызов функции проверки Ш�?М
-	RS485_TEST();			// Вызов функции проверки RS485
-  Accel_Ini(); 		  // Вызов функция инициализации акселлерометра
-  print_UART_value("[DATA] Requesting %.0f samples of data...", (float)data_requests);
-	for(uint8_t i = 0; i < data_requests; i++)
-	{
-	  Accel_ReadAcc();    // Вызов функции проверки акселлерометра
-	}
-	if(INT1_counts >= data_requests)
-	{
-	  print_UART_value("[SUCCESS] Interrupt leg is ok, interrupts amount: %.0f\n\r", (float)INT1_counts);
-	}
-	else
-	{
-	  print_UART_value("[ERROR] Interrupt leg is NOT ok, interrupts amount: %.0f\n\r", (float)INT1_counts);
-	}
-	INT1_counts = 0;
+    print_UART_value("[INIT] VD15 unit test, version of program: %.1f\n\r", (float)VD15_TEST_VERSION);
+    print_UART_message("[DO] Checking...\n\r");
+    LEDS_TEST(); 			// Вызов функции проверки светодиодов
+    print_UART_message("[CURRENT LOOP/PWM] Checking...\n\r");
+    PWM_TEST(); 			// Вызов функции проверки Ш�?М
+    RS485_TEST();			// Вызов функции проверки RS485
+    Accel_Ini(); 		  // Вызов функция инициализации акселлерометра
+    print_UART_value("[LIS2DS12: DATA] Requesting %.0f samples of data...\n\r", (float)data_requests);
+    for(uint8_t i = 0; i < data_requests; i++)
+    {
+      Accel_ReadAcc();    // Вызов функции проверки акселлерометра
+    }
+    if(INT1_counts >= data_requests)
+    {
+      print_UART_value("[LIS2DS12: INTERRUPTS - OK] Interrupt leg is ok, interrupts amount: %.0f\n\r", (float)INT1_counts);
+    }
+    else
+    {
+      print_UART_value("[LIS2DS12: INTERRUPTS - ERROR] Interrupt leg is NOT ok, interrupts amount: %.0f\n\r", (float)INT1_counts);
+    }
+    INT1_counts = 0;
+    print_UART_message("------------------------------------\n\r");
 
     /* USER CODE END WHILE */
 
@@ -298,6 +309,10 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
@@ -353,14 +368,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : PA2 PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_11|GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4|GPIO_PIN_11, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PA4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
@@ -375,6 +383,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PA11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
@@ -387,65 +402,36 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void LEDS_TEST(void)      // Функция проверки светодиодов
 {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-    HAL_Delay(1000);
+  TIM2->CCR3 = PWM_MAX;
+  HAL_Delay(1000);
+  TIM2->CCR3 = PWM_MIN;
+  HAL_Delay(1000);
 }
 
-void PWM_TEST(void)       // Функция проверки ШИМ
+void PWM_TEST(void)       // Функция проверки Ш�?М
 {
-    uint8_t PWM_delay = 16;
-    for (int i=0; i<=255; i++)
-    {
-      if ((i>178)&&(i<=255)) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-        TIM2->CCR2 = i;
-        HAL_Delay(PWM_delay);
-      }
-      else if ((i>178)!=(i<=255)) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-        TIM2->CCR2 = i;
-        HAL_Delay(PWM_delay);
-      }
-      else {
-        TIM2->CCR2 = i;
-        HAL_Delay(PWM_delay);
-      }
+  uint8_t PWM_delay = 6;
+  for(int i = 0; i <= PWM_MAX; i++)
+  {
+    TIM2->CCR2 = i;
+    TIM2->CCR3 = i;
+    HAL_Delay(PWM_delay);
+  }
 
-    }
-
-    for (int i=255; i>=0; i--)
-    {
-      if ((i>178)&&(i<=255)) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-        TIM2->CCR2 = i;
-        HAL_Delay(PWM_delay);
-      }
-      else if ((i>178)!=(i<=255)) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-        TIM2->CCR2 = i;
-        HAL_Delay(PWM_delay);
-      }
-      else {
-        TIM2->CCR2 = i;
-        HAL_Delay(PWM_delay);
-      }
-    }
-    HAL_Delay(10);
+  for(int i = PWM_MAX; i >= 0; i--)
+  {
+    TIM2->CCR2 = i;
+    TIM2->CCR3 = i;
+    HAL_Delay(PWM_delay);
+  }
+  HAL_Delay(10);
 }
 
 void RS485_TEST(void)     // Функция проверки RS485
 {
-  char* UART_test = "[RS-485/UART] TEST:\n\r";
-  char* UART_waiting = "[RS-485/UART] WAITING FOR A BYTE\r\n";
-  char* UART_ok = "\r\n[RS-485/UART] OK\r\n";
+  char *UART_test = "[RS-485/UART] Testing...\n\r";
+  char *UART_waiting = "[RS-485/UART] Waiting for a single byte...\r\n";
+  char *UART_ok = "\r\n[RS-485/UART] Ok\r\n";
 
   uint8_t data_flag = 0;
   uint8_t str[1];
@@ -456,15 +442,15 @@ void RS485_TEST(void)     // Функция проверки RS485
   while(data_flag == 0)
   {
     if(HAL_UART_Receive(&huart1, str, 1, 100) == HAL_OK)
-      {
-        RS_485_ON;
-        HAL_UART_Transmit(&huart1, str, 1, 100);
-        HAL_Delay(1000);
-        HAL_UART_Transmit(&huart1, (uint8_t*)UART_ok, strlen(UART_ok), 100);
-        RS_485_OFF;
-        data_flag = 1;
-        HAL_Delay(2000);
-      }
+    {
+      RS_485_ON;
+      HAL_UART_Transmit(&huart1, str, 1, 100);
+      HAL_Delay(1000);
+      HAL_UART_Transmit(&huart1, (uint8_t*)UART_ok, strlen(UART_ok), 100);
+      RS_485_OFF;
+      data_flag = 1;
+      HAL_Delay(2000);
+    }
     else
     {
       RS_485_ON;
@@ -486,7 +472,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  while (1)
+  while(1)
   {
   }
   /* USER CODE END Error_Handler_Debug */

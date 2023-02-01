@@ -27,7 +27,8 @@ Src/lis2ds12.o: ../Src/lis2ds12.c ../Inc/lis2ds12.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+ ../Src/lis2ds12_reg.h
 
 ../Inc/lis2ds12.h:
 
@@ -88,3 +89,5 @@ Src/lis2ds12.o: ../Src/lis2ds12.c ../Inc/lis2ds12.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+
+../Src/lis2ds12_reg.h:

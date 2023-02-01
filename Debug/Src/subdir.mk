@@ -6,6 +6,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Src/lis2ds12.c \
+../Src/lis2ds12_reg.c \
 ../Src/main.c \
 ../Src/stm32f4xx_hal_msp.c \
 ../Src/stm32f4xx_it.c \
@@ -15,6 +16,7 @@ C_SRCS += \
 
 OBJS += \
 ./Src/lis2ds12.o \
+./Src/lis2ds12_reg.o \
 ./Src/main.o \
 ./Src/stm32f4xx_hal_msp.o \
 ./Src/stm32f4xx_it.o \
@@ -24,6 +26,7 @@ OBJS += \
 
 C_DEPS += \
 ./Src/lis2ds12.d \
+./Src/lis2ds12_reg.d \
 ./Src/main.d \
 ./Src/stm32f4xx_hal_msp.d \
 ./Src/stm32f4xx_it.d \
