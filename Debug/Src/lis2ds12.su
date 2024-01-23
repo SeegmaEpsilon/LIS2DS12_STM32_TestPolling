@@ -1,11 +1,6 @@
 core_cm4.h:1688:22:__NVIC_EnableIRQ	16	static
 core_cm4.h:1724:22:__NVIC_DisableIRQ	16	static,ignoring_inline_asm
-lis2ds12.c:11:13:Error_Device	120	static
-lis2ds12.c:22:13:Error_SPI	56	static
-lis2ds12.c:31:9:SPIx_WriteRead	32	static
-lis2ds12.c:41:6:Accel_IO_Read	16	static
-lis2ds12.c:62:6:Accel_IO_Write	16	static
-lis2ds12.c:80:9:Accel_ReadID	16	static
-lis2ds12.c:87:6:Accel_GetXYZ	32	static
-lis2ds12.c:103:6:Accel_ReadAcc	64	static
-lis2ds12.c:119:6:Accel_Ini	24	static
+lis2ds12.c:8:9:accelerometer_read	24	static
+lis2ds12.c:18:9:accelerometer_write	24	static
+lis2ds12.c:27:6:lis2ds12_get_acceleration	32	static
+lis2ds12.c:43:6:lis2ds12_initialization	16	static

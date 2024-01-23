@@ -21,9 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
-#include "string.h"
-#include "lis2ds12.h"
+#include "includes.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,63 +31,18 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define VD15_TEST_VERSION 1.1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define LED_ON HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET)
-#define LED_OFF HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET)
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
-
 TIM_HandleTypeDef htim2;
-
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-uint32_t PWM_MAX = 0;
-uint32_t PWM_MIN = 0;
-
-uint32_t INT1_counts = 0;
-uint32_t INT2_counts = 0;
-uint32_t INTx_counts = 0;
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-  if(GPIO_Pin == GPIO_PIN_1)
-  {
-    INT1_counts++;
-  }
-  else if(GPIO_Pin == GPIO_PIN_2)
-  {
-    INT2_counts++;
-  }
-  else
-  {
-    INTx_counts++;
-  }
-}
-
-/* send str with value over UART */
-void print_UART_value(char *str_to_send, float value_to_send)
-{
-  uint8_t temp[200] = { 0 };
-  sprintf((char*)temp, str_to_send, value_to_send);
-  RS_485_ON;
-  while(HAL_UART_Transmit(&huart1, (uint8_t*)temp, strlen((char*)temp), 0x1000) == HAL_BUSY);
-  RS_485_OFF;
-}
-
-/* send str without value over UART */
-void print_UART_message(char *str_to_send)
-{
-  RS_485_ON;
-  while(HAL_UART_Transmit(&huart1, (uint8_t*)str_to_send, strlen((char*)str_to_send), 0x1000) == HAL_BUSY);
-  RS_485_OFF;
-}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,18 +57,12 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void LEDS_TEST(void);
-void PWM_TEST(void);
-void RS485_TEST(void);
-void Accel_Ini(void);
-void Accel_ReadAcc(void);
-
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -144,64 +91,35 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  // Accel_Ini(); 				// Вызов функция инициализации акселлерометра
-  PWM_MAX = htim2.Init.Period;
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-  uint8_t data_requests = 1;
+  cpu_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while(1)
   {
-    print_UART_value("[INIT] VD15 unit test, version of program: %.1f\n\r", (float)VD15_TEST_VERSION);
-    print_UART_message("[DO] Checking...\n\r");
-    LEDS_TEST(); 			// Вызов функции проверки светодиодов
-    print_UART_message("[CURRENT LOOP/PWM] Checking...\n\r");
-    PWM_TEST(); 			// Вызов функции проверки Ш�?М
-    RS485_TEST();			// Вызов функции проверки RS485
-    Accel_Ini(); 		  // Вызов функция инициализации акселлерометра
-    print_UART_value("[LIS2DS12: DATA] Requesting %.0f samples of data...\n\r", (float)data_requests);
-    for(uint8_t i = 0; i < data_requests; i++)
-    {
-      Accel_ReadAcc();    // Вызов функции проверки акселлерометра
-    }
-    if(INT1_counts >= data_requests)
-    {
-      print_UART_value("[LIS2DS12: INTERRUPTS - OK] Interrupt leg is ok, interrupts amount: %.0f\n\r", (float)INT1_counts);
-    }
-    else
-    {
-      print_UART_value("[LIS2DS12: INTERRUPTS - ERROR] Interrupt leg is NOT ok, interrupts amount: %.0f\n\r", (float)INT1_counts);
-    }
-    INT1_counts = 0;
-    print_UART_message("------------------------------------\n\r");
-
     /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
-
   }
   /* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+   * in the RCC_OscInitTypeDef structure.
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -215,9 +133,9 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   /** Initializes the CPU, AHB and APB buses clocks
-  */
+   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+      |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -230,10 +148,10 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief SPI1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_SPI1_Init(void)
 {
 
@@ -268,10 +186,10 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief TIM2 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_TIM2_Init(void)
 {
 
@@ -321,10 +239,10 @@ static void MX_TIM2_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief USART1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_USART1_UART_Init(void)
 {
 
@@ -354,10 +272,10 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -400,73 +318,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void LEDS_TEST(void)      // Функция проверки светодиодов
-{
-  TIM2->CCR3 = PWM_MAX;
-  HAL_Delay(1000);
-  TIM2->CCR3 = PWM_MIN;
-  HAL_Delay(1000);
-}
-
-void PWM_TEST(void)       // Функция проверки Ш�?М
-{
-  uint8_t PWM_delay = 6;
-  for(int i = 0; i <= PWM_MAX; i++)
-  {
-    TIM2->CCR2 = i;
-    TIM2->CCR3 = i;
-    HAL_Delay(PWM_delay);
-  }
-
-  for(int i = PWM_MAX; i >= 0; i--)
-  {
-    TIM2->CCR2 = i;
-    TIM2->CCR3 = i;
-    HAL_Delay(PWM_delay);
-  }
-  HAL_Delay(10);
-}
-
-void RS485_TEST(void)     // Функция проверки RS485
-{
-  char *UART_test = "[RS-485/UART] Testing...\n\r";
-  char *UART_waiting = "[RS-485/UART] Waiting for a single byte...\r\n";
-  char *UART_ok = "\r\n[RS-485/UART] Ok\r\n";
-
-  uint8_t data_flag = 0;
-  uint8_t str[1];
-  RS_485_ON;
-  HAL_UART_Transmit(&huart1, (uint8_t*)UART_test, strlen(UART_test), 100);
-  HAL_Delay(2000);
-  RS_485_OFF;
-  while(data_flag == 0)
-  {
-    if(HAL_UART_Receive(&huart1, str, 1, 100) == HAL_OK)
-    {
-      RS_485_ON;
-      HAL_UART_Transmit(&huart1, str, 1, 100);
-      HAL_Delay(1000);
-      HAL_UART_Transmit(&huart1, (uint8_t*)UART_ok, strlen(UART_ok), 100);
-      RS_485_OFF;
-      data_flag = 1;
-      HAL_Delay(2000);
-    }
-    else
-    {
-      RS_485_ON;
-      HAL_UART_Transmit(&huart1, (uint8_t*)UART_waiting, strlen(UART_waiting), 100);
-      RS_485_OFF;
-      HAL_Delay(2000);
-    }
-  }
-}
-
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -480,12 +337,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

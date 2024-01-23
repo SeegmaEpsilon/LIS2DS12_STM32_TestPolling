@@ -1,5 +1,5 @@
-Src/lis2ds12.o: ../Src/lis2ds12.c ../Inc/lis2ds12.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
+Src/lis2ds12.o: ../Src/lis2ds12.c ../Inc/includes.h ../Inc/lis2ds12_reg.h \
+ ../Inc/lis2ds12.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h \
@@ -27,8 +27,12 @@ Src/lis2ds12.o: ../Src/lis2ds12.c ../Inc/lis2ds12.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Src/lis2ds12_reg.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h ../Inc/misc.h \
+ ../Inc/test.h ../Inc/cpu.h
+
+../Inc/includes.h:
+
+../Inc/lis2ds12_reg.h:
 
 ../Inc/lis2ds12.h:
 
@@ -90,4 +94,8 @@ Src/lis2ds12.o: ../Src/lis2ds12.c ../Inc/lis2ds12.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
-../Src/lis2ds12_reg.h:
+../Inc/misc.h:
+
+../Inc/test.h:
+
+../Inc/cpu.h:

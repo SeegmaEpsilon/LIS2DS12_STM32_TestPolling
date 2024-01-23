@@ -1,0 +1,3 @@
+cpu.c:20:6:HAL_GPIO_EXTI_Callback	16	static
+cpu.c:33:6:cpu_init	8	static
+cpu.c:41:6:cpu_loop	16	static
