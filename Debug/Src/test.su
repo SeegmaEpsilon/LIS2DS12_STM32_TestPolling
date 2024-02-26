@@ -1,3 +1,3 @@
 test.c:15:6:test_led	8	static
 test.c:25:6:test_pwm	24	static
-test.c:46:6:test_rs485	24	static
+test.c:46:6:test_rs485	16	static

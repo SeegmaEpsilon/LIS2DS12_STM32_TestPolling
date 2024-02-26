@@ -60,7 +60,7 @@ void cpu_loop()
   test_rs485();     // Вызов функции проверки RS485
   HAL_Delay(DELAY_BETWEEN_TEST);
 
-  lis2ds12_initialization();       // Вызов функция инициализации акселлерометра
+  lis2ds12_initialization(); // Вызов функция инициализации акселлерометра
 
   while (1)
   {
@@ -77,6 +77,8 @@ void cpu_loop()
       acceleration_counter++;
     }
   }
+
+  if(INT1_counts > DATA_REQUEST_COUNT) INT1_counts = DATA_REQUEST_COUNT;
 
   print_UART("[LIS2DS12: INTERRUPTS] Количество сработанных прерываний: %d из %d\n\r", INT1_counts, DATA_REQUEST_COUNT);
   print_UART("\r\n\r\n");

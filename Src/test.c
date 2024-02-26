@@ -47,22 +47,23 @@ void test_rs485(void)     // Функция проверки RS485
 {
   char *string_test = "123";
 
-  uint8_t str[10];
+  uint8_t str_receive[3];
 
   print_UART("[RS-485/UART] Проверка RS-485/UART...\r\n");
   print_UART("[RS-485/UART] Отправьте число 123 в течение 10 секунд...\r\n");
 
-  HAL_StatusTypeDef status = HAL_UART_Receive(&huart1, str, strlen(string_test), 10000);
+  HAL_StatusTypeDef status = HAL_UART_Receive(&huart1, str_receive, sizeof(str_receive), 10000);
+  HAL_Delay(100); // обязательная задержка, без нее МК примет мусор и отправит его же
 
   if (status == HAL_OK)
   {
-    if(strstr((char*)str, string_test) != NULL)
+    if(strstr((char*)str_receive, string_test) != NULL)
     {
       print_UART("[RS-485/UART] Приемопередача в порядке\r\n");
     }
     else
     {
-      print_UART("[RS-485/UART] Принятое число отличается от 123\r\n");
+      print_UART("[RS-485/UART] Принятое число отличается от 123, возможная неполадка RX на МК\r\n");
     }
   }
   else

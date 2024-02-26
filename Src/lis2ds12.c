@@ -42,6 +42,8 @@ void lis2ds12_get_acceleration(void)      // Функция обработки �
 
 void lis2ds12_initialization(void)				 // Функция инициализации акселлерометра
 {
+  NVIC_DisableIRQ(EXTI1_IRQn);
+
   dev_ctx.read_reg = accelerometer_read;
   dev_ctx.write_reg = accelerometer_write;
 
@@ -58,8 +60,6 @@ void lis2ds12_initialization(void)				 // Функция инициализац�
 
   if(readedID == DEVICE_ID) print_UART("[LIS2DS12: ID] Акселерометр обнаружен: LIS2DS12\r\n");
   else print_UART("[LIS2DS12: ID] Акселерометр LIS2DS12 не найден, получен ID: 0x%02X\r\n", readedID);
-
-  NVIC_DisableIRQ(EXTI1_IRQn);
 
   lis2ds12_reg_t reg;
 
